@@ -13,7 +13,6 @@ string path = Directory.GetCurrentDirectory();
 
 while (!isExit)
 {
-    //level += 1;
     string targetFile = $"{path}\\level\\level{level}.txt";
     FileInfo file = new(targetFile);
     if (!file.Exists)
@@ -51,13 +50,11 @@ while (!isExit)
         if (infoKey.Key == ConsoleKey.Escape)
             return;
         if (life < 0)
-            {
-                Console.WriteLine("Вы проиграли, закончились жизни");
-                Environment.Exit(0);
-            }
+        {
+            Console.WriteLine("Вы проиграли, закончились жизни");
+            return;
+        }
     }
-    if (totalCrumbs == 0)
-    {
         int cmd = ReadIntInput("[1] Следующий уровень? [2] Выход");
         switch (cmd)
         {
@@ -68,9 +65,7 @@ while (!isExit)
                 isExit = true;
                 break;
         }
-    }
 }
-
 
 
 int ReadIntInput(string message)
