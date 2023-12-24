@@ -2,7 +2,7 @@
 
 int level = 1;
 int life = 1;
-int totalCrumbs = 0;
+int totalCrumbs;
 Random random = new();
 ConsoleKeyInfo infoKey;
 (int, int) coordinatePlayer;
@@ -23,30 +23,29 @@ while (!isExit)
 
     Console.CursorVisible = false;
 
-    maze = ReadFileLevelToArray(targetFile);
+    maze = LoadFileLevelToArray(targetFile);
 
     do
     {
         coordinatePlayer = GetRandomPozition(maze, random);
         coordinateHurdle = GetRandomPozition(maze, random);
     }
-    while (!IsCrumbsOrEmptyCell(maze, coordinatePlayer.Item1, coordinatePlayer.Item2)
-            || !IsCrumbsOrEmptyCell(maze, coordinateHurdle.Item1, coordinateHurdle.Item2));
+    while (!IsEmptyCell(maze, coordinatePlayer.Item1, coordinatePlayer.Item2)
+            || !IsEmptyCell(maze, coordinateHurdle.Item1, coordinateHurdle.Item2));
 
     maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
     maze = AddCrumbsInMaze(maze, out totalCrumbs);
-
-
-    while (!(totalCrumbs == 0))
+    Console.WriteLine(totalCrumbs);
+   while (totalCrumbs > 0)
     {
         Console.Clear();
         Console.WriteLine($"Уровень: {level}| Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
+        // totalCrumbs = crumbs;
         PrintMaze(maze);
         Console.ForegroundColor = ConsoleColor.White;
         infoKey = Console.ReadKey(true);
         coordinatePlayer = GetСoordinatePlayerInMaze(infoKey, coordinatePlayer.Item1, coordinatePlayer.Item2);
-        maze = NextPozitionInMaze(maze, coordinatePlayer, totalCrumbs, out int crumbs);
-        totalCrumbs = crumbs;
+        maze = NextPozitionInMaze(maze, coordinatePlayer);
         if (infoKey.Key == ConsoleKey.Escape)
             return;
         if (life < 0)
@@ -55,6 +54,7 @@ while (!isExit)
             return;
         }
     }
+     
         int cmd = ReadIntInput("[1] Следующий уровень? [2] Выход");
         switch (cmd)
         {
@@ -67,16 +67,15 @@ while (!isExit)
         }
 }
 
-
 int ReadIntInput(string message)
 {
     Console.WriteLine(message);
     return int.Parse(Console.ReadLine());
 }
 
-static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, int totalCount, out int minusCrumbs)
+static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate)
 {
-    minusCrumbs = totalCount;
+    // minusCrumbs = totalCount;
     for (int i = 0; i < array.GetLength(0); i++)
     {
         for (int j = 0; j < array.GetLength(1); j++)
@@ -85,10 +84,10 @@ static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, int tota
                 array[i, j] = ' ';
         }
     }
-    if (array[coordinate.Item1, coordinate.Item2] == '.')
-    {
-        minusCrumbs--;
-    }
+    // if (array[coordinate.Item1, coordinate.Item2] == '.')
+    // {
+    //     minusCrumbs--;
+    // }
     array[coordinate.Item1, coordinate.Item2] = '@';
     return array;
 }
@@ -102,8 +101,15 @@ static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, int tota
     if (infoKey.Key == ConsoleKey.LeftArrow) X--;
     if (infoKey.Key == ConsoleKey.RightArrow) X++;
 
-    if (IsCrumbsOrEmptyCell(maze, Y, X))
+    if (IsEmptyCell(maze, Y, X))
+    {
         return (Y, X);
+    }
+    else if(IsCrumbsCell(maze, Y, X))
+    {
+        CrumbsCountMinus();
+        return (Y, X);
+    }
     else if (IsHurdleCell(maze, Y, X))
     {
         HurdleMinusLife();
@@ -111,6 +117,16 @@ static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, int tota
     }
     else
         return (rowY, columnX);
+}
+
+bool IsCrumbsCell(char[,] array, int rowY, int columnX)
+{
+    return array[rowY, columnX] == '.';
+}
+
+void CrumbsCountMinus()
+{
+    totalCrumbs--;
 }
 
 void HurdleMinusLife()
@@ -122,18 +138,18 @@ void HurdleMinusLife()
 static char[,] СreatingStartMaze(char[,] array, (int, int) pozitionPlayer, (int, int) pozitionHundle)
 {
     array[pozitionPlayer.Item1, pozitionPlayer.Item2] = '@';
-    array[pozitionHundle.Item1, pozitionHundle.Item2] = 'x';
+    array[pozitionHundle.Item1, pozitionHundle.Item2] = 'X';
     return array;
 }
 
-static bool IsCrumbsOrEmptyCell(char[,] array, int rowY, int columnX)
+static bool IsEmptyCell(char[,] array, int rowY, int columnX)
 {
-    return array[rowY, columnX] == '.' || array[rowY, columnX] == ' ';
+    return array[rowY, columnX] == ' ';
 }
 
 static bool IsHurdleCell(char[,] array, int rowY, int columnX)
 {
-    return array[rowY, columnX] == 'x';
+    return array[rowY, columnX] == 'X';
 }
 
 (int, int) GetRandomPozition(char[,] array, Random random)
@@ -160,7 +176,7 @@ static char[,] AddCrumbsInMaze(char[,] arr, out int count)
     return arr;
 }
 
-static char[,] ReadFileLevelToArray(string fileLevel)
+static char[,] LoadFileLevelToArray(string fileLevel)
 {
     string[] lines = File.ReadAllLines(fileLevel);
     char[,] c = new char[lines.Length, lines[0].Length];
