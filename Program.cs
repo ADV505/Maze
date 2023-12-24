@@ -35,7 +35,7 @@ while (!isExit)
 
     maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
     maze = AddCrumbsInMaze(maze, out totalCrumbs);
-    Console.WriteLine(totalCrumbs);
+    
    while (totalCrumbs > 0)
     {
         Console.Clear();
