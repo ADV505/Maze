@@ -24,7 +24,7 @@ do
     switch (infoKey.Key)
     {
         case ConsoleKey.D1:
-            filePath = LoadLevel(level);
+            filePath = LevelPath(level);
             isCycleStart = IsFileExists(filePath);
             if (!isCycleStart)
             {
@@ -33,7 +33,7 @@ do
             }
             break;
         case ConsoleKey.D2:
-            filePath = LoadSaveGame();
+            filePath = SaveGamePath();
             isCycleStart = IsFileExists(filePath);
             if (!isCycleStart)
             {
@@ -50,13 +50,13 @@ while (!isCycleStart);
 
 while (!isCycleGame)
 {
-    filePath = LoadLevel(level);
+    filePath = LevelPath(level);
     if (!IsFileExists(filePath))
-        {
-            Console.WriteLine($"\nОшибка загрузки уровня! Не найден файл ({filePath})");
-                return;
-        }
-        
+    {
+        Console.WriteLine($"\nОшибка загрузки уровня! Не найден файл ({filePath})");
+        return;
+    }
+
     maze = LoadFileLevelToArray(filePath);
 
     do
@@ -100,12 +100,12 @@ while (!isCycleGame)
     }
 }
 
-string LoadLevel(int value)
+string LevelPath(int value)
 {
     return $".\\level\\level{value}.txt";
 }
 
-string LoadSaveGame()
+string SaveGamePath()
 {
     return $".\\level\\save.txt";
 }
