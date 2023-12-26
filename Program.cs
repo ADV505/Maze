@@ -1,29 +1,63 @@
-﻿using System.Text;
-
+﻿
 int level = 1;
-int life = 1;
+int life = 3;
 int totalCrumbs;
 Random random = new();
 ConsoleKeyInfo infoKey;
 (int, int) coordinatePlayer;
 (int, int) coordinateHurdle;
-bool isExit = false;
-char[,] maze = new char[0, 0];
-string path = Directory.GetCurrentDirectory();
+bool isCycleStart = false;
+bool isCycleGame = false;
+string filePath = String.Empty;
+char[,] maze;
 
-while (!isExit)
+
+do
 {
-    string targetFile = $"{path}\\level\\level{level}.txt";
-    FileInfo file = new(targetFile);
-    if (!file.Exists)
+    Console.Clear();
+
+    Console.WriteLine("Игра Лабиринт");
+    Console.WriteLine("[1] Начать новую игру" +
+                    "\n[2] Загрузить ранее сохраненную игру?" +
+                    "\n[3] Выход");
+    infoKey = Console.ReadKey(true);
+    switch (infoKey.Key)
     {
-        Console.WriteLine("Отсутствует файл следующего уровня!");
-        Environment.Exit(0);
+        case ConsoleKey.D1:
+            filePath = LoadLevel(level);
+            isCycleStart = IsFileExists(filePath);
+            if (!isCycleStart)
+            {
+                Console.WriteLine($"\nОшибка загрузки уровня! Не найден файл ({filePath})");
+                return;
+            }
+            break;
+        case ConsoleKey.D2:
+            filePath = LoadSaveGame();
+            isCycleStart = IsFileExists(filePath);
+            if (!isCycleStart)
+            {
+                Console.WriteLine($"\nНет сохраненной игры!");
+                Console.WriteLine("Нажмите любую клавишу для продолжения...");
+                Console.Read();
+            }
+            break;
+        case ConsoleKey.D3:
+            return;
     }
+}
+while (!isCycleStart);
 
-    Console.CursorVisible = false;
-
-    maze = LoadFileLevelToArray(targetFile);
+while (!isCycleGame)
+{
+    filePath = LoadLevel(level);
+    if (!IsFileExists(filePath))
+        {
+            Console.WriteLine($"\nОшибка загрузки уровня! Не найден файл ({filePath})");
+                return;
+        }
+        
+    maze = LoadFileLevelToArray(filePath);
 
     do
     {
@@ -35,12 +69,11 @@ while (!isExit)
 
     maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
     maze = AddCrumbsInMaze(maze, out totalCrumbs);
-    
-   while (totalCrumbs > 0)
+
+    while (totalCrumbs > 0)
     {
         Console.Clear();
-        Console.WriteLine($"Уровень: {level}| Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
-        // totalCrumbs = crumbs;
+        Console.WriteLine($"Уровень: {level} | Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
         PrintMaze(maze);
         Console.ForegroundColor = ConsoleColor.White;
         infoKey = Console.ReadKey(true);
@@ -54,17 +87,33 @@ while (!isExit)
             return;
         }
     }
-     
-        int cmd = ReadIntInput("[1] Следующий уровень? [2] Выход");
-        switch (cmd)
-        {
-            case 1:
-                level++;
-                break;
-            case 2:
-                isExit = true;
-                break;
-        }
+
+    int cmd = ReadIntInput("[1] Следующий уровень? [2] Выход");
+    switch (cmd)
+    {
+        case 1:
+            level++;
+            break;
+        case 2:
+            isCycleGame = true;
+            break;
+    }
+}
+
+string LoadLevel(int value)
+{
+    return $".\\level\\level{value}.txt";
+}
+
+string LoadSaveGame()
+{
+    return $".\\level\\save.txt";
+}
+
+static bool IsFileExists(string path)
+{
+    FileInfo file = new(path);
+    return file.Exists;
 }
 
 int ReadIntInput(string message)
@@ -75,7 +124,6 @@ int ReadIntInput(string message)
 
 static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate)
 {
-    // minusCrumbs = totalCount;
     for (int i = 0; i < array.GetLength(0); i++)
     {
         for (int j = 0; j < array.GetLength(1); j++)
@@ -84,10 +132,6 @@ static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate)
                 array[i, j] = ' ';
         }
     }
-    // if (array[coordinate.Item1, coordinate.Item2] == '.')
-    // {
-    //     minusCrumbs--;
-    // }
     array[coordinate.Item1, coordinate.Item2] = '@';
     return array;
 }
@@ -105,7 +149,7 @@ static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate)
     {
         return (Y, X);
     }
-    else if(IsCrumbsCell(maze, Y, X))
+    else if (IsCrumbsCell(maze, Y, X))
     {
         CrumbsCountMinus();
         return (Y, X);
@@ -132,7 +176,7 @@ void CrumbsCountMinus()
 void HurdleMinusLife()
 {
     life--;
-    Console.ForegroundColor = ConsoleColor.Red;
+    //Console.ForegroundColor = ConsoleColor.Red;
 }
 
 static char[,] СreatingStartMaze(char[,] array, (int, int) pozitionPlayer, (int, int) pozitionHundle)
@@ -179,15 +223,15 @@ static char[,] AddCrumbsInMaze(char[,] arr, out int count)
 static char[,] LoadFileLevelToArray(string fileLevel)
 {
     string[] lines = File.ReadAllLines(fileLevel);
-    char[,] c = new char[lines.Length, lines[0].Length];
+    char[,] array = new char[lines.Length, lines[0].Length];
     for (int i = 0; i < lines.Length; i++)
     {
         for (int j = 0; j < lines[0].Length; j++)
         {
-            c[i, j] = lines[i][j];
+            array[i, j] = lines[i][j];
         }
     }
-    return c;
+    return array;
 }
 
 static void PrintMaze(char[,] arr)
