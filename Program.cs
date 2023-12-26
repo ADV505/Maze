@@ -87,14 +87,14 @@ while (!isCycleGame)
             return;
         }
     }
-
-    int cmd = ReadIntInput("[1] Следующий уровень? [2] Выход");
-    switch (cmd)
+    Console.WriteLine("[1] Следующий уровень? [2] Выход");
+    infoKey = Console.ReadKey();
+    switch (infoKey.Key)
     {
-        case 1:
+        case ConsoleKey.D1:
             level++;
             break;
-        case 2:
+        case ConsoleKey.D2:
             isCycleGame = true;
             break;
     }
@@ -114,12 +114,6 @@ static bool IsFileExists(string path)
 {
     FileInfo file = new(path);
     return file.Exists;
-}
-
-int ReadIntInput(string message)
-{
-    Console.WriteLine(message);
-    return int.Parse(Console.ReadLine());
 }
 
 static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate)
