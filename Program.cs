@@ -83,7 +83,7 @@ while (!isCycleGame)
         //Console.Read();
         coordinateHurdle = GetCoordinateHurdleInMaze(coordinateHurdle.Item1, coordinateHurdle.Item2);
         maze = NextPozitionInMaze(maze, coordinateHurdle, hurdle);
-        Console.ForegroundColor = ConsoleColor.White;
+        // Console.ForegroundColor = ConsoleColor.White;
 
         infoKey = Console.ReadKey();
         //Console.WriteLine("Прошло");
@@ -107,27 +107,20 @@ while (!isCycleGame)
     int x = columnX;
     if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX))
         return (rowY, columnX);
-    else
-    {
-        while (IsEmptyCellOrCrumbsCell(maze, y, x - 1))
-        {
-            return GetCoordinateHurdleInMaze(y, x - 1);
-        };
-        while (IsEmptyCellOrCrumbsCell(maze, y - 1, x))
-        {
-            return GetCoordinateHurdleInMaze(y - 1, x);
-        };
-        while (IsEmptyCellOrCrumbsCell(maze, y, x + 1))
-        {
-            return GetCoordinateHurdleInMaze(y, x + 1);
-        };
-        while (IsEmptyCellOrCrumbsCell(maze, y + 1, x))
-        {
-            return GetCoordinateHurdleInMaze(y + 1, x);
-        };
 
-        return (y, x);
-    }
+    if (IsEmptyCellOrCrumbsCell(maze, y, x - 1) || IsEmptyCellOrCrumbsCell(maze, y + 1, x))
+        return GetCoordinateHurdleInMaze(y, x - 1);
+
+    else if (IsEmptyCellOrCrumbsCell(maze, y - 1, x) || IsEmptyCellOrCrumbsCell(maze, y, x - 1))
+        return GetCoordinateHurdleInMaze(y - 1, x);
+
+    else if (IsEmptyCellOrCrumbsCell(maze, y, x + 1) || IsEmptyCellOrCrumbsCell(maze, y - 1, x))
+        return GetCoordinateHurdleInMaze(y, x + 1);
+
+    else if (IsEmptyCellOrCrumbsCell(maze, y + 1, x) || IsEmptyCellOrCrumbsCell(maze, y, x + 1))
+        return GetCoordinateHurdleInMaze(y + 1, x);
+    else
+        return (rowY, columnX);
 }
 
 void ShowMenuAfterGame()
