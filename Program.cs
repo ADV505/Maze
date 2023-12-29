@@ -108,16 +108,16 @@ while (!isCycleGame)
     if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX))
         return (rowY, columnX);
 
-    if (IsEmptyCellOrCrumbsCell(maze, y, x - 1) || IsEmptyCellOrCrumbsCell(maze, y + 1, x))
+    if (IsEmptyCellOrCrumbsCell(maze, y, x - 1))
         return GetCoordinateHurdleInMaze(y, x - 1);
 
-    else if (IsEmptyCellOrCrumbsCell(maze, y - 1, x) || IsEmptyCellOrCrumbsCell(maze, y, x - 1))
+    else if (IsEmptyCellOrCrumbsCell(maze, y - 1, x))
         return GetCoordinateHurdleInMaze(y - 1, x);
 
-    else if (IsEmptyCellOrCrumbsCell(maze, y, x + 1) || IsEmptyCellOrCrumbsCell(maze, y - 1, x))
+    else if (IsEmptyCellOrCrumbsCell(maze, y, x + 1))
         return GetCoordinateHurdleInMaze(y, x + 1);
 
-    else if (IsEmptyCellOrCrumbsCell(maze, y + 1, x) || IsEmptyCellOrCrumbsCell(maze, y, x + 1))
+    else if (IsEmptyCellOrCrumbsCell(maze, y + 1, x))
         return GetCoordinateHurdleInMaze(y + 1, x);
     else
         return (rowY, columnX);
