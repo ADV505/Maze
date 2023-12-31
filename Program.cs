@@ -98,7 +98,7 @@ while (!isCycleGame)
             return;
         }
     }
-    ShowMenuAfterGame();
+    //ShowMenuAfterGame();
 }
 
 (int, int) GetCoordinateHurdleInMaze(int rowY, int columnX)
