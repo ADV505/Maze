@@ -68,7 +68,8 @@ while (!isCycleGame)
         coordinateHurdle = GetRandomPozition(maze, random);
     }
     while (!IsEmptyCellOrCrumbsCell(maze, coordinatePlayer.Item1, coordinatePlayer.Item2)
-            || !IsEmptyCellOrCrumbsCell(maze, coordinateHurdle.Item1, coordinateHurdle.Item2));
+            || !IsEmptyCellOrCrumbsCell(maze, coordinateHurdle.Item1, coordinateHurdle.Item2)
+            || coordinatePlayer == coordinateHurdle);
 
     maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
     maze = AddCrumbsInMaze(maze, out totalCrumbs);
