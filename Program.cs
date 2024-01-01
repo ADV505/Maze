@@ -78,24 +78,24 @@ while (!isCycleGame)
     while (true)
     {
 
-        Console.Clear();
-        Console.WriteLine($"Уровень: {level} | Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
-        PrintMaze(maze);
-        //Console.Read();
-
-        coordinateHurdle = GetCoordinateHurdleInMaze(coordinateHurdle.Item1, coordinateHurdle.Item2, dir);
-        // Console.WriteLine(dir);
-        // Console.Read();
-        maze = NextPozitionInMaze(maze, coordinateHurdle, hurdle);
-        // Console.ForegroundColor = ConsoleColor.White;
-
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine($"Уровень: {level} | Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
+            PrintMaze(maze);
+            coordinateHurdle = GetCoordinateHurdleInMaze(coordinateHurdle.Item1, coordinateHurdle.Item2, dir);
+            maze = NextPozitionInMaze(maze, coordinateHurdle, hurdle);
+            Thread.Sleep(100);
+            if (Console.KeyAvailable)
+                break;
+        }
         infoKey = Console.ReadKey();
-        //Console.WriteLine("Прошло");
-        //Console.Read();
         coordinatePlayer = GetСoordinatePlayerInMaze(infoKey, coordinatePlayer.Item1, coordinatePlayer.Item2);
         maze = NextPozitionInMaze(maze, coordinatePlayer, player);
+
         if (infoKey.Key == ConsoleKey.Escape)
             return;
+
         if (life < 0)
         {
             Console.WriteLine("Вы проиграли, закончились жизни");
@@ -113,6 +113,34 @@ while (!isCycleGame)
     if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX))
         return (rowY, columnX);
 
+    if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX - 1) && IsEmptyCellOrCrumbsCell(maze, rowY, columnX + 1)
+        && IsEmptyCellOrCrumbsCell(maze, rowY - 1, columnX) && IsEmptyCellOrCrumbsCell(maze, rowY + 1, columnX))
+    {
+        if (dirSt == "right")
+        {
+            dir = "up";
+            return GetCoordinateHurdleInMaze(rowY - 1, columnX, dir);
+        }
+
+        if (dirSt == "down")
+        {
+            dir = "right";
+            return GetCoordinateHurdleInMaze(rowY, columnX + 1, dir);
+        }
+
+        if (dirSt == "left")
+        {
+            dir = "down";
+            return GetCoordinateHurdleInMaze(rowY + 1, columnX, dir);
+        }
+
+        if (dirSt == "up")
+        {
+            dir = "left";
+            return GetCoordinateHurdleInMaze(rowY, columnX - 1, dir);
+        }
+    }
+
 
     if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX - 1) && dirSt != "right")
     {
@@ -120,23 +148,24 @@ while (!isCycleGame)
         return GetCoordinateHurdleInMaze(rowY, columnX - 1, dir);
     }
 
-    else if (IsEmptyCellOrCrumbsCell(maze, rowY - 1, columnX) && dirSt != "down")
+    if (IsEmptyCellOrCrumbsCell(maze, rowY - 1, columnX) && dirSt != "down")
     {
         dir = "up";
         return GetCoordinateHurdleInMaze(rowY - 1, columnX, dir);
     }
 
-    else if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX + 1) && dirSt != "left")
+    if (IsEmptyCellOrCrumbsCell(maze, rowY, columnX + 1) && dirSt != "left")
     {
         dir = "right";
         return GetCoordinateHurdleInMaze(rowY, columnX + 1, dir);
     }
 
-    else if (IsEmptyCellOrCrumbsCell(maze, rowY + 1, columnX) && dirSt != "up")
+    if (IsEmptyCellOrCrumbsCell(maze, rowY + 1, columnX) && dirSt != "up")
     {
         dir = "down";
         return GetCoordinateHurdleInMaze(rowY + 1, columnX, dir);
     }
+
     else
     {
         dir = string.Empty;
@@ -261,9 +290,9 @@ bool IsHurdleCell(char[,] array, int rowY, int columnX)
 
 (int, int) GetRandomPozition(char[,] array, Random random)
 {
-    int Y = random.Next(array.GetLength(0));
-    int X = random.Next(array.GetLength(1));
-    return (Y, X);
+    int y = random.Next(array.GetLength(0));
+    int x = random.Next(array.GetLength(1));
+    return (y, x);
 }
 
 static char[,] AddCrumbsInMaze(char[,] arr, out int count)
