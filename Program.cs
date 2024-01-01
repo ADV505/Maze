@@ -1,6 +1,4 @@
 ﻿
-using System.Dynamic;
-
 int level = 1;
 int life = 3;
 int totalCrumbs;
@@ -14,6 +12,7 @@ string filePath = String.Empty;
 char[,] maze;
 char player = '@';
 char hurdle = 'X';
+char defaultCell = '.';
 string dir = string.Empty;
 do
 {
@@ -74,8 +73,8 @@ while (!isCycleGame)
     maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
     maze = AddCrumbsInMaze(maze, out totalCrumbs);
 
-    //while (totalCrumbs > 0)
-    while (true)
+    while (totalCrumbs > 0)
+    //while (true)
     {
 
         while (true)
@@ -85,10 +84,11 @@ while (!isCycleGame)
             PrintMaze(maze);
             coordinateHurdle = GetCoordinateHurdleInMaze(coordinateHurdle.Item1, coordinateHurdle.Item2, dir);
             maze = NextPozitionInMaze(maze, coordinateHurdle, hurdle);
-            Thread.Sleep(100);
+            Thread.Sleep(200);
             if (Console.KeyAvailable)
                 break;
         }
+
         infoKey = Console.ReadKey();
         coordinatePlayer = GetСoordinatePlayerInMaze(infoKey, coordinatePlayer.Item1, coordinatePlayer.Item2);
         maze = NextPozitionInMaze(maze, coordinatePlayer, player);
@@ -102,7 +102,7 @@ while (!isCycleGame)
             return;
         }
     }
-    //ShowMenuAfterGame();
+    ShowMenuAfterGame();
 }
 
 
@@ -173,8 +173,6 @@ while (!isCycleGame)
     }
 }
 
-
-
 void ShowMenuAfterGame()
 {
     Console.WriteLine("[1] Следующий уровень? [2] Выход");
@@ -206,61 +204,58 @@ static bool IsFileExists(string path)
     return file.Exists;
 }
 
-static char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, char symbol)
+char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, char symbol)
 {
     for (int i = 0; i < array.GetLength(0); i++)
     {
         for (int j = 0; j < array.GetLength(1); j++)
         {
-            if (symbol == '@')
+            if (symbol == player)
             {
-                if (array[i, j] == '@')
+                if (array[i, j] == player)
                     array[i, j] = ' ';
             }
-            if (symbol == 'X')
+
+            if (symbol == hurdle)
             {
-                if (array[i, j] == 'X')
-                    array[i, j] = '.';
+                if (array[i, j] == hurdle)
+                    array[i, j] = defaultCell;
             }
         }
     }
+    if (symbol == hurdle)
+        defaultCell = array[coordinate.Item1, coordinate.Item2];
+    if (symbol == player)
+        if (array[coordinate.Item1, coordinate.Item2] == '.')
+            GetCrumbs();
+
     array[coordinate.Item1, coordinate.Item2] = symbol;
     return array;
 }
 
 (int, int) GetСoordinatePlayerInMaze(ConsoleKeyInfo infoKey, int rowY, int columnX)
 {
-    int X = columnX;
-    int Y = rowY;
-    if (infoKey.Key == ConsoleKey.UpArrow) Y--;
-    if (infoKey.Key == ConsoleKey.DownArrow) Y++;
-    if (infoKey.Key == ConsoleKey.LeftArrow) X--;
-    if (infoKey.Key == ConsoleKey.RightArrow) X++;
+    int x = columnX;
+    int y = rowY;
+    if (infoKey.Key == ConsoleKey.UpArrow) y--;
+    if (infoKey.Key == ConsoleKey.DownArrow) y++;
+    if (infoKey.Key == ConsoleKey.LeftArrow) x--;
+    if (infoKey.Key == ConsoleKey.RightArrow) x++;
 
-    if (IsEmptyCellOrCrumbsCell(maze, Y, X))
+    if (IsEmptyCellOrCrumbsCell(maze, y, x))
     {
-        return (Y, X);
+        return (y, x);
     }
-    // else if (IsCrumbsCell(maze, Y, X))
-    // {
-    //     CrumbsCountMinus();
-    //     return (Y, X);
-    // }
-    else if (IsHurdleCell(maze, Y, X))
+    else if (IsHurdleCell(maze, y, x))
     {
         HurdleMinusLife();
-        return (Y, X);
+        return (y, x);
     }
     else
         return (rowY, columnX);
 }
 
-// bool IsCrumbsCell(char[,] array, int rowY, int columnX)
-// {
-//     return array[rowY, columnX] == '.';
-// }
-
-void CrumbsCountMinus()
+void GetCrumbs()
 {
     totalCrumbs--;
 }
@@ -268,7 +263,6 @@ void CrumbsCountMinus()
 void HurdleMinusLife()
 {
     life--;
-    //Console.ForegroundColor = ConsoleColor.Red;
 }
 
 char[,] СreatingStartMaze(char[,] array, (int, int) pozitionPlayer, (int, int) pozitionHurdle)
