@@ -1,4 +1,6 @@
 ﻿
+using System.Text;
+
 int level = 1;
 int life = 3;
 int totalCrumbs;
@@ -7,13 +9,14 @@ ConsoleKeyInfo infoKey;
 (int, int) coordinatePlayer;
 (int, int) coordinateHurdle;
 bool isCycleStart = false;
-bool isCycleGame = false;
+bool isCycleGame = true;
 string filePath = String.Empty;
 char[,] maze;
 char player = '@';
 char hurdle = 'X';
 char defaultCell = '.';
 string dir = string.Empty;
+
 do
 {
     Console.Clear();
@@ -33,6 +36,8 @@ do
                 Console.WriteLine($"\nОшибка загрузки уровня! Не найден файл ({filePath})");
                 return;
             }
+            else
+                LoadGame(filePath);
             break;
         case ConsoleKey.D2:
             filePath = SaveGamePath();
@@ -50,61 +55,86 @@ do
 }
 while (!isCycleStart);
 
-while (!isCycleGame)
+void LoadGame(string path)
 {
-    filePath = LevelPath(level);
-    if (!IsFileExists(filePath))
+    while (isCycleGame)
     {
-        Console.WriteLine($"\nОшибка загрузки уровня! Не найден файл ({filePath})");
-        return;
-    }
+        maze = LoadFileLevelToArray(path);
 
-    maze = LoadFileLevelToArray(filePath);
-
-    do
-    {
-        coordinatePlayer = GetRandomPozition(maze, random);
-        coordinateHurdle = GetRandomPozition(maze, random);
-    }
-    while (!IsEmptyCellOrCrumbsCell(maze, coordinatePlayer.Item1, coordinatePlayer.Item2)
-            || !IsEmptyCellOrCrumbsCell(maze, coordinateHurdle.Item1, coordinateHurdle.Item2)
-            || coordinatePlayer == coordinateHurdle);
-
-    maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
-    maze = AddCrumbsInMaze(maze, out totalCrumbs);
-
-    while (totalCrumbs > 0)
-    //while (true)
-    {
-
-        while (true)
+        do
         {
-            Console.Clear();
-            Console.WriteLine($"Уровень: {level} | Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
-            PrintMaze(maze);
-            coordinateHurdle = GetCoordinateHurdleInMaze(coordinateHurdle.Item1, coordinateHurdle.Item2, dir);
-            maze = NextPozitionInMaze(maze, coordinateHurdle, hurdle);
-            Thread.Sleep(200);
-            if (Console.KeyAvailable)
-                break;
+            coordinatePlayer = GetRandomPozition(maze, random);
+            coordinateHurdle = GetRandomPozition(maze, random);
         }
+        while (!IsEmptyCellOrCrumbsCell(maze, coordinatePlayer.Item1, coordinatePlayer.Item2)
+                || !IsEmptyCellOrCrumbsCell(maze, coordinateHurdle.Item1, coordinateHurdle.Item2)
+                || coordinatePlayer == coordinateHurdle);
 
-        infoKey = Console.ReadKey();
-        coordinatePlayer = GetСoordinatePlayerInMaze(infoKey, coordinatePlayer.Item1, coordinatePlayer.Item2);
-        maze = NextPozitionInMaze(maze, coordinatePlayer, player);
+        maze = СreatingStartMaze(maze, coordinatePlayer, coordinateHurdle);
+        maze = AddCrumbsInMaze(maze, out totalCrumbs);
 
-        if (infoKey.Key == ConsoleKey.Escape)
-            return;
-
-        if (life < 0)
+        while (totalCrumbs != 0)
+        //while (true)
         {
-            Console.WriteLine("Вы проиграли, закончились жизни");
-            return;
+
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine($"Уровень: {level} | Лабиринт {maze.GetLength(0)}x{maze.GetLength(1)} | Кол-во жизней: {life} | Крошек осталось: {totalCrumbs}\n");
+                PrintMaze(maze);
+                coordinateHurdle = GetCoordinateHurdleInMaze(coordinateHurdle.Item1, coordinateHurdle.Item2, dir);
+                maze = NextPozitionInMaze(maze, coordinateHurdle, hurdle);
+                Thread.Sleep(200);
+                if (Console.KeyAvailable)
+                    break;
+            }
+
+            infoKey = Console.ReadKey(true);
+            coordinatePlayer = GetСoordinatePlayerInMaze(infoKey, coordinatePlayer.Item1, coordinatePlayer.Item2);
+            maze = NextPozitionInMaze(maze, coordinatePlayer, player);
+
+            if (infoKey.Key == ConsoleKey.Spacebar)
+                SaveGame(maze);
+
+            if (infoKey.Key == ConsoleKey.Escape)
+                return;
+
+            if (life < 0)
+            {
+                Console.WriteLine("Вы проиграли, закончились жизни");
+                return;
+            }
         }
+        
+        ShowMenuAfterGame();
     }
-    ShowMenuAfterGame();
+    
+
 }
 
+void SaveGame(char[,] array)
+{
+    string path = SaveGamePath();
+
+    StringBuilder output = new StringBuilder();
+    for (int row = 0; row < array.GetLength(0); row++)
+    {
+        for (int column = 0; column < array.GetLength(1); column++)
+        {
+            output.Append($"{array[row, column]}");
+
+        }
+        output.Append(Environment.NewLine);
+    }
+    try
+    {
+        File.WriteAllText(path, output.ToString());
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"<--Ошибка записи в файл: {ex.Message}");
+    }
+}
 
 (int, int) GetCoordinateHurdleInMaze(int rowY, int columnX, string dirSt)
 {
@@ -175,15 +205,18 @@ while (!isCycleGame)
 
 void ShowMenuAfterGame()
 {
-    Console.WriteLine("[1] Следующий уровень? [2] Выход");
-    infoKey = Console.ReadKey();
+    Console.WriteLine("\n[1] Следующий уровень? [2] Выход");
+    infoKey = Console.ReadKey(true);
     switch (infoKey.Key)
     {
         case ConsoleKey.D1:
             level++;
+            filePath = LevelPath(level);
+            if (IsFileExists(filePath))
+                LoadGame(filePath);
             break;
         case ConsoleKey.D2:
-            isCycleGame = true;
+            isCycleGame = false;
             break;
     }
 }
@@ -227,7 +260,7 @@ char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, char symbol)
         defaultCell = array[coordinate.Item1, coordinate.Item2];
     if (symbol == player)
         if (array[coordinate.Item1, coordinate.Item2] == '.')
-            GetCrumbs();
+            CrumbsCount();
 
     array[coordinate.Item1, coordinate.Item2] = symbol;
     return array;
@@ -255,9 +288,9 @@ char[,] NextPozitionInMaze(char[,] array, (int, int) coordinate, char symbol)
         return (rowY, columnX);
 }
 
-void GetCrumbs()
+void CrumbsCount()
 {
-    totalCrumbs--;
+    --totalCrumbs;
 }
 
 void HurdleMinusLife()
